@@ -273,48 +273,58 @@ public String createTrip(Trip trip) {
         updates.add(nameKey + " = " + valueKey);
     }
 
-    private void putS(Map<String, AttributeValue> item, String key, String value) {
-        if (value != null && !value.isBlank())
-            item.put(key, AttributeValue.fromS(value));
-    }
+  private void safePutS(Map<String, AttributeValue> item, String key, String value) {
+
+    if (value == null)
+        return;
+
+    String v = value.trim();
+
+    if (v.isEmpty())
+        return;
+
+    item.put(key, AttributeValue.fromS(v));
+}
 
     /* ================= MAPPER ================= */
 
-    private Map<String, AttributeValue> toItem(Trip t) {
+   private Map<String, AttributeValue> toItem(Trip t) {
 
-        Map<String, AttributeValue> item = new HashMap<>();
+    Map<String, AttributeValue> item = new HashMap<>();
 
-        putS(item, "tripId", t.getTripId());
-        putS(item, "userId", t.getUserId());
-        putS(item, "userName", t.getUserName());
-        putS(item, "userPhone", t.getUserPhone());
-        putS(item, "pickupLocation", t.getPickupLocation());
-        putS(item, "dropLocation", t.getDropLocation());
-        putS(item, "vehicleType", t.getVehicleType());
+    safePutS(item,"tripId",t.getTripId());
+    safePutS(item,"userId",t.getUserId());
+    safePutS(item,"userName",t.getUserName());
+    safePutS(item,"userPhone",t.getUserPhone());
 
-        putS(item, "driverName", t.getDriverName());
-        putS(item, "driverPhone", t.getDriverPhone());
-        putS(item, "driverCarType", t.getDriverCarType());
-        putS(item, "driverCarNumber", t.getDriverCarNumber());
+    safePutS(item,"pickupLocation",t.getPickupLocation());
+    safePutS(item,"dropLocation",t.getDropLocation());
+    safePutS(item,"vehicleType",t.getVehicleType());
 
-        if (t.getPassengers() != null && t.getPassengers() > 0) {
-            item.put("passengers",
+    safePutS(item,"driverId",t.getDriverId());
+    safePutS(item,"driverName",t.getDriverName());
+    safePutS(item,"driverPhone",t.getDriverPhone());
+    safePutS(item,"driverCarType",t.getDriverCarType());
+    safePutS(item,"driverCarNumber",t.getDriverCarNumber());
+
+    if (t.getPassengers() != null)
+        item.put("passengers",
                 AttributeValue.fromN(String.valueOf(t.getPassengers())));
-        }
 
-        if (t.getNumberOfDays() != null && t.getNumberOfDays() > 0) {
-            item.put("numberOfDays",
+    if (t.getNumberOfDays() != null)
+        item.put("numberOfDays",
                 AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
-        }
 
-        if (t.getStatus() != null)
-            item.put("status", AttributeValue.fromS(t.getStatus().name()));
+    if (t.getStatus() != null)
+        item.put("status",
+                AttributeValue.fromS(t.getStatus().name()));
 
-        if (t.getCreatedAt() != null)
-            item.put("createdAt", AttributeValue.fromN(String.valueOf(t.getCreatedAt())));
+    if (t.getCreatedAt() != null)
+        item.put("createdAt",
+                AttributeValue.fromN(String.valueOf(t.getCreatedAt())));
 
-        return item;
-    }
+    return item;
+}
 
     private Trip fromItem(Map<String, AttributeValue> item) {
 
