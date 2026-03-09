@@ -280,11 +280,15 @@ public class TripRepository {
         putS(item, "driverCarType", t.getDriverCarType());
         putS(item, "driverCarNumber", t.getDriverCarNumber());
 
-        if (t.getPassengers() != null && t.getPassengers() > 0)
-            item.put("passengers", AttributeValue.fromN(String.valueOf(t.getPassengers())));
+        if (t.getPassengers() != null && t.getPassengers() > 0) {
+            item.put("passengers",
+                AttributeValue.fromN(String.valueOf(t.getPassengers())));
+        }
 
-        if (t.getNumberOfDays() != null && t.getNumberOfDays() > 0)
-            item.put("numberOfDays", AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
+        if (t.getNumberOfDays() != null && t.getNumberOfDays() > 0) {
+            item.put("numberOfDays",
+                AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
+        }
 
         if (t.getStatus() != null)
             item.put("status", AttributeValue.fromS(t.getStatus().name()));
