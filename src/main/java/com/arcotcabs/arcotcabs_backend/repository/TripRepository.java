@@ -22,6 +22,9 @@ public class TripRepository {
 
     public String createTrip(Trip trip) {
 
+        System.out.println("========== CREATE TRIP DEBUG ==========");
+        System.out.println("Incoming Trip Object = " + trip);
+
         if (trip.getUserId() == null || trip.getUserId().isBlank())
             throw new IllegalStateException("userId is required");
 
@@ -39,12 +42,27 @@ public class TripRepository {
         trip.setStatus(TripStatus.PENDING);
         trip.setCreatedAt(System.currentTimeMillis());
 
+        Map<String, AttributeValue> item = toItem(trip);
+
+        System.out.println("DynamoDB Item Map = " + item);
+
+        // detect invalid attributes
+        for (Map.Entry<String, AttributeValue> entry : item.entrySet()) {
+            AttributeValue val = entry.getValue();
+            if (val == null) {
+                System.out.println("⚠ NULL attribute detected -> " + entry.getKey());
+            }
+        }
+
         dynamoDb.putItem(
                 PutItemRequest.builder()
                         .tableName(TABLE_NAME)
-                        .item(toItem(trip))
+                        .item(item)
                         .build()
         );
+
+        System.out.println("Trip successfully inserted: " + tripId);
+        System.out.println("=======================================");
 
         return tripId;
     }
@@ -93,6 +111,8 @@ public class TripRepository {
         if (trip.getStatus() != null)
             values.put(":status", AttributeValue.fromS(trip.getStatus().name()));
 
+        System.out.println("Assign Driver Values = " + values);
+
         UpdateItemRequest request = UpdateItemRequest.builder()
                 .tableName(TABLE_NAME)
                 .key(key)
@@ -136,188 +156,76 @@ public class TripRepository {
         return fromItem(response.item());
     }
 
-    /* ================= UPDATE START TRIP ================= */
-
-    public void updateStartTrip(Trip trip) {
-
-        Map<String, AttributeValue> key = Map.of(
-                "tripId", AttributeValue.fromS(trip.getTripId())
-        );
-
-        Map<String, AttributeValue> values = new HashMap<>();
-
-        putS(values, ":startLocation", trip.getStartLocation());
-
-        values.put(":startKm",
-                AttributeValue.fromN(String.valueOf(trip.getStartKm())));
-
-        values.put(":startTime",
-                AttributeValue.fromN(String.valueOf(trip.getStartTime())));
-
-        putS(values, ":odometerImageUrl", trip.getOdometerImageUrl());
-
-        if (trip.getStatus() != null)
-            values.put(":status",
-                    AttributeValue.fromS(trip.getStatus().name()));
-
-        UpdateItemRequest request = UpdateItemRequest.builder()
-                .tableName(TABLE_NAME)
-                .key(key)
-                .updateExpression(
-                        "SET #startLocation = :startLocation, " +
-                        "#startKm = :startKm, " +
-                        "#startTime = :startTime, " +
-                        "#odometerImageUrl = :odometerImageUrl, " +
-                        "#status = :status"
-                )
-                .expressionAttributeNames(Map.of(
-                        "#startLocation", "startLocation",
-                        "#startKm", "startKm",
-                        "#startTime", "startTime",
-                        "#odometerImageUrl", "odometerImageUrl",
-                        "#status", "status"
-                ))
-                .expressionAttributeValues(values)
-                .build();
-
-        dynamoDb.updateItem(request);
-    }
-
-    /* ================= UPDATE END TRIP ================= */
-
-    public void updateEndTrip(Trip trip) {
-
-        Map<String, AttributeValue> key = Map.of(
-                "tripId", AttributeValue.fromS(trip.getTripId())
-        );
-
-        Map<String, AttributeValue> values = new HashMap<>();
-
-        putS(values, ":endLocation", trip.getEndLocation());
-
-        values.put(":endKm",
-                AttributeValue.fromN(String.valueOf(trip.getEndKm())));
-
-        values.put(":endTime",
-                AttributeValue.fromN(String.valueOf(trip.getEndTime())));
-
-        putS(values, ":endOdometerImageUrl", trip.getEndOdometerImageUrl());
-        putS(values, ":signatureUrl", trip.getSignatureUrl());
-
-        if (trip.getStatus() != null)
-            values.put(":status",
-                    AttributeValue.fromS(trip.getStatus().name()));
-
-        UpdateItemRequest request = UpdateItemRequest.builder()
-                .tableName(TABLE_NAME)
-                .key(key)
-                .updateExpression(
-                        "SET #endLocation = :endLocation, " +
-                        "#endKm = :endKm, " +
-                        "#endTime = :endTime, " +
-                        "#endOdometerImageUrl = :endOdometerImageUrl, " +
-                        "#signatureUrl = :signatureUrl, " +
-                        "#status = :status"
-                )
-                .expressionAttributeNames(Map.of(
-                        "#endLocation", "endLocation",
-                        "#endKm", "endKm",
-                        "#endTime", "endTime",
-                        "#endOdometerImageUrl", "endOdometerImageUrl",
-                        "#signatureUrl", "signatureUrl",
-                        "#status", "status"
-                ))
-                .expressionAttributeValues(values)
-                .build();
-
-        dynamoDb.updateItem(request);
-    }
-
-    /* ================= UPDATE STATUS ================= */
-
-    public void updateStatus(String tripId, TripStatus status) {
-
-        Map<String, AttributeValue> key = Map.of(
-                "tripId", AttributeValue.fromS(tripId)
-        );
-
-        UpdateItemRequest request = UpdateItemRequest.builder()
-                .tableName(TABLE_NAME)
-                .key(key)
-                .updateExpression("SET #status = :status")
-                .expressionAttributeNames(Map.of("#status", "status"))
-                .expressionAttributeValues(
-                        Map.of(":status", AttributeValue.fromS(status.name()))
-                )
-                .build();
-
-        dynamoDb.updateItem(request);
-    }
-
     /* ================= SAFE STRING PUT ================= */
 
     private void putS(Map<String, AttributeValue> map, String key, String value) {
         if (value != null && !value.isBlank()) {
             map.put(key, AttributeValue.fromS(value));
+        } else {
+            System.out.println("Skipped empty field -> " + key);
         }
     }
 
     /* ================= MAPPER ================= */
 
-   private Map<String, AttributeValue> toItem(Trip t) {
+    private Map<String, AttributeValue> toItem(Trip t) {
 
-    Map<String, AttributeValue> item = new HashMap<>();
+        Map<String, AttributeValue> item = new HashMap<>();
 
-    if (t.getTripId() != null && !t.getTripId().isBlank())
-        item.put("tripId", AttributeValue.fromS(t.getTripId()));
+        if (t.getTripId() != null && !t.getTripId().isBlank())
+            item.put("tripId", AttributeValue.fromS(t.getTripId()));
 
-    if (t.getUserId() != null && !t.getUserId().isBlank())
-        item.put("userId", AttributeValue.fromS(t.getUserId()));
+        if (t.getUserId() != null && !t.getUserId().isBlank())
+            item.put("userId", AttributeValue.fromS(t.getUserId()));
 
-    if (t.getUserName() != null && !t.getUserName().isBlank())
-        item.put("userName", AttributeValue.fromS(t.getUserName()));
+        if (t.getUserName() != null && !t.getUserName().isBlank())
+            item.put("userName", AttributeValue.fromS(t.getUserName()));
 
-    if (t.getUserPhone() != null && !t.getUserPhone().isBlank())
-        item.put("userPhone", AttributeValue.fromS(t.getUserPhone()));
+        if (t.getUserPhone() != null && !t.getUserPhone().isBlank())
+            item.put("userPhone", AttributeValue.fromS(t.getUserPhone()));
 
-    if (t.getPickupLocation() != null && !t.getPickupLocation().isBlank())
-        item.put("pickupLocation", AttributeValue.fromS(t.getPickupLocation()));
+        if (t.getPickupLocation() != null && !t.getPickupLocation().isBlank())
+            item.put("pickupLocation", AttributeValue.fromS(t.getPickupLocation()));
 
-    if (t.getDropLocation() != null && !t.getDropLocation().isBlank())
-        item.put("dropLocation", AttributeValue.fromS(t.getDropLocation()));
+        if (t.getDropLocation() != null && !t.getDropLocation().isBlank())
+            item.put("dropLocation", AttributeValue.fromS(t.getDropLocation()));
 
-    if (t.getVehicleType() != null && !t.getVehicleType().isBlank())
-        item.put("vehicleType", AttributeValue.fromS(t.getVehicleType()));
+        if (t.getVehicleType() != null && !t.getVehicleType().isBlank())
+            item.put("vehicleType", AttributeValue.fromS(t.getVehicleType()));
 
-    if (t.getDriverName() != null && !t.getDriverName().isBlank())
-        item.put("driverName", AttributeValue.fromS(t.getDriverName()));
+        if (t.getDriverName() != null && !t.getDriverName().isBlank())
+            item.put("driverName", AttributeValue.fromS(t.getDriverName()));
 
-    if (t.getDriverPhone() != null && !t.getDriverPhone().isBlank())
-        item.put("driverPhone", AttributeValue.fromS(t.getDriverPhone()));
+        if (t.getDriverPhone() != null && !t.getDriverPhone().isBlank())
+            item.put("driverPhone", AttributeValue.fromS(t.getDriverPhone()));
 
-    if (t.getDriverCarType() != null && !t.getDriverCarType().isBlank())
-        item.put("driverCarType", AttributeValue.fromS(t.getDriverCarType()));
+        if (t.getDriverCarType() != null && !t.getDriverCarType().isBlank())
+            item.put("driverCarType", AttributeValue.fromS(t.getDriverCarType()));
 
-    if (t.getDriverCarNumber() != null && !t.getDriverCarNumber().isBlank())
-        item.put("driverCarNumber", AttributeValue.fromS(t.getDriverCarNumber()));
+        if (t.getDriverCarNumber() != null && !t.getDriverCarNumber().isBlank())
+            item.put("driverCarNumber", AttributeValue.fromS(t.getDriverCarNumber()));
 
-    if (t.getPassengers() > 0)
-        item.put("passengers",
-                AttributeValue.fromN(String.valueOf(t.getPassengers())));
+        if (t.getPassengers() > 0)
+            item.put("passengers",
+                    AttributeValue.fromN(String.valueOf(t.getPassengers())));
 
-    if (t.getNumberOfDays() > 0)
-        item.put("numberOfDays",
-                AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
+        if (t.getNumberOfDays() > 0)
+            item.put("numberOfDays",
+                    AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
 
-    if (t.getStatus() != null)
-        item.put("status",
-                AttributeValue.fromS(t.getStatus().name()));
+        if (t.getStatus() != null)
+            item.put("status",
+                    AttributeValue.fromS(t.getStatus().name()));
 
-    item.put("createdAt",
-            AttributeValue.fromN(String.valueOf(t.getCreatedAt())));
+        item.put("createdAt",`
+                AttributeValue.fromN(String.valueOf(t.getCreatedAt())));
 
-    return item;
-}
+        System.out.println("Generated DynamoDB Item = " + item);
+
+        return item;
+    }
+
+    /* ================= FROM ITEM ================= */
 
     private Trip fromItem(Map<String, AttributeValue> item) {
 
@@ -359,48 +267,6 @@ public class TripRepository {
 
         if (item.containsKey("createdAt"))
             t.setCreatedAt(Long.parseLong(item.get("createdAt").n()));
-
-        if (item.containsKey("driverId"))
-            t.setDriverId(item.get("driverId").s());
-
-        if (item.containsKey("driverName"))
-            t.setDriverName(item.get("driverName").s());
-
-        if (item.containsKey("driverPhone"))
-            t.setDriverPhone(item.get("driverPhone").s());
-
-        if (item.containsKey("driverCarType"))
-            t.setDriverCarType(item.get("driverCarType").s());
-
-        if (item.containsKey("driverCarNumber"))
-            t.setDriverCarNumber(item.get("driverCarNumber").s());
-
-        if (item.containsKey("startLocation"))
-            t.setStartLocation(item.get("startLocation").s());
-
-        if (item.containsKey("startKm"))
-            t.setStartKm(Double.parseDouble(item.get("startKm").n()));
-
-        if (item.containsKey("startTime"))
-            t.setStartTime(Long.parseLong(item.get("startTime").n()));
-
-        if (item.containsKey("odometerImageUrl"))
-            t.setOdometerImageUrl(item.get("odometerImageUrl").s());
-
-        if (item.containsKey("endLocation"))
-            t.setEndLocation(item.get("endLocation").s());
-
-        if (item.containsKey("endKm"))
-            t.setEndKm(Double.parseDouble(item.get("endKm").n()));
-
-        if (item.containsKey("endTime"))
-            t.setEndTime(Long.parseLong(item.get("endTime").n()));
-
-        if (item.containsKey("endOdometerImageUrl"))
-            t.setEndOdometerImageUrl(item.get("endOdometerImageUrl").s());
-
-        if (item.containsKey("signatureUrl"))
-            t.setSignatureUrl(item.get("signatureUrl").s());
 
         return t;
     }
