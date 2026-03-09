@@ -22,18 +22,18 @@ public class TripRepository {
 
 public String createTrip(Trip trip) {
 
-    System.out.println("========= DEBUG TRIP OBJECT =========");
+    System.out.println("========== CREATE TRIP DEBUG ==========");
 
-    System.out.println("userId        : " + trip.getUserId());
-    System.out.println("userName      : " + trip.getUserName());
-    System.out.println("userPhone     : " + trip.getUserPhone());
-    System.out.println("pickupLocation: " + trip.getPickupLocation());
-    System.out.println("dropLocation  : " + trip.getDropLocation());
-    System.out.println("vehicleType   : " + trip.getVehicleType());
-    System.out.println("passengers    : " + trip.getPassengers());
-    System.out.println("numberOfDays  : " + trip.getNumberOfDays());
+    System.out.println("userId        : [" + trip.getUserId() + "]");
+    System.out.println("userName      : [" + trip.getUserName() + "]");
+    System.out.println("userPhone     : [" + trip.getUserPhone() + "]");
+    System.out.println("pickupLocation: [" + trip.getPickupLocation() + "]");
+    System.out.println("dropLocation  : [" + trip.getDropLocation() + "]");
+    System.out.println("vehicleType   : [" + trip.getVehicleType() + "]");
+    System.out.println("passengers    : [" + trip.getPassengers() + "]");
+    System.out.println("numberOfDays  : [" + trip.getNumberOfDays() + "]");
 
-    System.out.println("=====================================");
+    System.out.println("=======================================");
 
     String tripId = UUID.randomUUID().toString();
 
@@ -43,28 +43,28 @@ public String createTrip(Trip trip) {
 
     Map<String, AttributeValue> item = new HashMap<>();
 
-    putDebugString(item,"tripId",trip.getTripId());
-    putDebugString(item,"userId",trip.getUserId());
-    putDebugString(item,"userName",trip.getUserName());
-    putDebugString(item,"userPhone",trip.getUserPhone());
-    putDebugString(item,"pickupLocation",trip.getPickupLocation());
-    putDebugString(item,"dropLocation",trip.getDropLocation());
-    putDebugString(item,"vehicleType",trip.getVehicleType());
+    addField(item, "tripId", trip.getTripId());
+    addField(item, "userId", trip.getUserId());
+    addField(item, "userName", trip.getUserName());
+    addField(item, "userPhone", trip.getUserPhone());
+    addField(item, "pickupLocation", trip.getPickupLocation());
+    addField(item, "dropLocation", trip.getDropLocation());
+    addField(item, "vehicleType", trip.getVehicleType());
 
-    if(trip.getPassengers()!=null){
+    if (trip.getPassengers() != null) {
         item.put("passengers",
                 AttributeValue.builder().n(String.valueOf(trip.getPassengers())).build());
         System.out.println("passengers -> SAVED");
-    }else{
-        System.out.println("passengers -> EMPTY");
+    } else {
+        System.out.println("passengers -> NULL");
     }
 
-    if(trip.getNumberOfDays()!=null){
+    if (trip.getNumberOfDays() != null) {
         item.put("numberOfDays",
                 AttributeValue.builder().n(String.valueOf(trip.getNumberOfDays())).build());
         System.out.println("numberOfDays -> SAVED");
-    }else{
-        System.out.println("numberOfDays -> EMPTY");
+    } else {
+        System.out.println("numberOfDays -> NULL");
     }
 
     item.put("status",
@@ -73,9 +73,9 @@ public String createTrip(Trip trip) {
     item.put("createdAt",
             AttributeValue.builder().n(String.valueOf(trip.getCreatedAt())).build());
 
-    System.out.println("========= FINAL DYNAMODB ITEM =========");
+    System.out.println("========== FINAL DYNAMODB ITEM ==========");
     System.out.println(item);
-    System.out.println("=======================================");
+    System.out.println("=========================================");
 
     dynamoDb.putItem(
             PutItemRequest.builder()
@@ -85,6 +85,23 @@ public String createTrip(Trip trip) {
     );
 
     return tripId;
+}
+    private void addField(Map<String, AttributeValue> item, String key, String value) {
+
+    if (value == null) {
+        System.out.println(key + " -> NULL");
+        return;
+    }
+
+    if (value.trim().isEmpty()) {
+        System.out.println(key + " -> EMPTY STRING");
+        return;
+    }
+
+    System.out.println(key + " -> SAVED : " + value);
+
+    item.put(key,
+            AttributeValue.builder().s(value.trim()).build());
 }
     private void putDebugString(Map<String, AttributeValue> item, String key, String value){
 
