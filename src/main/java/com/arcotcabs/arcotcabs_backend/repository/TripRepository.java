@@ -29,32 +29,44 @@ public String createTrip(Trip trip) {
 
     Map<String, AttributeValue> item = new HashMap<>();
 
-    /* REQUIRED FIELDS */
-    putS(item, "tripId", trip.getTripId());
-    putS(item, "userId", trip.getUserId());
-    putS(item, "pickupLocation", trip.getPickupLocation());
-    putS(item, "dropLocation", trip.getDropLocation());
-    putS(item, "vehicleType", trip.getVehicleType());
+    /* REQUIRED FIELDS (VALIDATE FIRST) */
+
+    if (trip.getUserId() == null || trip.getUserId().isBlank())
+        throw new RuntimeException("userId is required");
+
+    if (trip.getPickupLocation() == null || trip.getPickupLocation().isBlank())
+        throw new RuntimeException("pickupLocation is required");
+
+    if (trip.getDropLocation() == null || trip.getDropLocation().isBlank())
+        throw new RuntimeException("dropLocation is required");
+
+    if (trip.getVehicleType() == null || trip.getVehicleType().isBlank())
+        throw new RuntimeException("vehicleType is required");
+
+    item.put("tripId", AttributeValue.fromS(tripId));
+    item.put("userId", AttributeValue.fromS(trip.getUserId()));
+    item.put("pickupLocation", AttributeValue.fromS(trip.getPickupLocation()));
+    item.put("dropLocation", AttributeValue.fromS(trip.getDropLocation()));
+    item.put("vehicleType", AttributeValue.fromS(trip.getVehicleType()));
 
     /* OPTIONAL FIELDS */
+
     putS(item, "userName", trip.getUserName());
     putS(item, "userPhone", trip.getUserPhone());
     putS(item, "travelDate", trip.getTravelDate());
     putS(item, "tripNotes", trip.getTripNotes());
 
-    if (trip.getPassengers() != null && trip.getPassengers() > 0) {
+    if (trip.getPassengers() != null)
         item.put("passengers", AttributeValue.fromN(String.valueOf(trip.getPassengers())));
-    }
 
-    if (trip.getNumberOfDays() != null && trip.getNumberOfDays() > 0) {
+    if (trip.getNumberOfDays() != null)
         item.put("numberOfDays", AttributeValue.fromN(String.valueOf(trip.getNumberOfDays())));
-    }
 
     item.put("status", AttributeValue.fromS(trip.getStatus().name()));
     item.put("createdAt", AttributeValue.fromN(String.valueOf(trip.getCreatedAt())));
 
     /* DEBUG PRINT */
-    System.out.println("DynamoDB ITEM -> " + item);
+    System.out.println("DYNAMO ITEM -> " + item);
 
     dynamoDb.putItem(
             PutItemRequest.builder()
