@@ -82,16 +82,24 @@ public class TripRepository {
                 "tripId", AttributeValue.fromS(trip.getTripId())
         );
 
+        Map<String, AttributeValue> values = new HashMap<>();
+
+        putS(values, ":driverId", trip.getDriverId());
+        putS(values, ":driverName", trip.getDriverName());
+        putS(values, ":driverPhone", trip.getDriverPhone());
+        putS(values, ":driverCarType", trip.getDriverCarType());
+        putS(values, ":driverCarNumber", trip.getDriverCarNumber());
+
+        if (trip.getStatus() != null)
+            values.put(":status", AttributeValue.fromS(trip.getStatus().name()));
+
         UpdateItemRequest request = UpdateItemRequest.builder()
                 .tableName(TABLE_NAME)
                 .key(key)
                 .updateExpression(
-                        "SET #driverId = :driverId, " +
-                                "#driverName = :driverName, " +
-                                "#driverPhone = :driverPhone, " +
-                                "#driverCarType = :driverCarType, " +
-                                "#driverCarNumber = :driverCarNumber, " +
-                                "#status = :status"
+                        "SET #driverId = :driverId, #driverName = :driverName, " +
+                        "#driverPhone = :driverPhone, #driverCarType = :driverCarType, " +
+                        "#driverCarNumber = :driverCarNumber, #status = :status"
                 )
                 .expressionAttributeNames(Map.of(
                         "#driverId", "driverId",
@@ -101,14 +109,7 @@ public class TripRepository {
                         "#driverCarNumber", "driverCarNumber",
                         "#status", "status"
                 ))
-                .expressionAttributeValues(Map.of(
-                        ":driverId", AttributeValue.fromS(trip.getDriverId()),
-                        ":driverName", AttributeValue.fromS(trip.getDriverName()),
-                        ":driverPhone", AttributeValue.fromS(trip.getDriverPhone()),
-                        ":driverCarType", AttributeValue.fromS(trip.getDriverCarType()),
-                        ":driverCarNumber", AttributeValue.fromS(trip.getDriverCarNumber()),
-                        ":status", AttributeValue.fromS(trip.getStatus().name())
-                ))
+                .expressionAttributeValues(values)
                 .build();
 
         dynamoDb.updateItem(request);
@@ -143,15 +144,31 @@ public class TripRepository {
                 "tripId", AttributeValue.fromS(trip.getTripId())
         );
 
+        Map<String, AttributeValue> values = new HashMap<>();
+
+        putS(values, ":startLocation", trip.getStartLocation());
+
+        values.put(":startKm",
+                AttributeValue.fromN(String.valueOf(trip.getStartKm())));
+
+        values.put(":startTime",
+                AttributeValue.fromN(String.valueOf(trip.getStartTime())));
+
+        putS(values, ":odometerImageUrl", trip.getOdometerImageUrl());
+
+        if (trip.getStatus() != null)
+            values.put(":status",
+                    AttributeValue.fromS(trip.getStatus().name()));
+
         UpdateItemRequest request = UpdateItemRequest.builder()
                 .tableName(TABLE_NAME)
                 .key(key)
                 .updateExpression(
                         "SET #startLocation = :startLocation, " +
-                                "#startKm = :startKm, " +
-                                "#startTime = :startTime, " +
-                                "#odometerImageUrl = :odometerImageUrl, " +
-                                "#status = :status"
+                        "#startKm = :startKm, " +
+                        "#startTime = :startTime, " +
+                        "#odometerImageUrl = :odometerImageUrl, " +
+                        "#status = :status"
                 )
                 .expressionAttributeNames(Map.of(
                         "#startLocation", "startLocation",
@@ -160,13 +177,7 @@ public class TripRepository {
                         "#odometerImageUrl", "odometerImageUrl",
                         "#status", "status"
                 ))
-                .expressionAttributeValues(Map.of(
-                        ":startLocation", AttributeValue.fromS(trip.getStartLocation()),
-                        ":startKm", AttributeValue.fromN(String.valueOf(trip.getStartKm())),
-                        ":startTime", AttributeValue.fromN(String.valueOf(trip.getStartTime())),
-                        ":odometerImageUrl", AttributeValue.fromS(trip.getOdometerImageUrl()),
-                        ":status", AttributeValue.fromS(trip.getStatus().name())
-                ))
+                .expressionAttributeValues(values)
                 .build();
 
         dynamoDb.updateItem(request);
@@ -180,16 +191,33 @@ public class TripRepository {
                 "tripId", AttributeValue.fromS(trip.getTripId())
         );
 
+        Map<String, AttributeValue> values = new HashMap<>();
+
+        putS(values, ":endLocation", trip.getEndLocation());
+
+        values.put(":endKm",
+                AttributeValue.fromN(String.valueOf(trip.getEndKm())));
+
+        values.put(":endTime",
+                AttributeValue.fromN(String.valueOf(trip.getEndTime())));
+
+        putS(values, ":endOdometerImageUrl", trip.getEndOdometerImageUrl());
+        putS(values, ":signatureUrl", trip.getSignatureUrl());
+
+        if (trip.getStatus() != null)
+            values.put(":status",
+                    AttributeValue.fromS(trip.getStatus().name()));
+
         UpdateItemRequest request = UpdateItemRequest.builder()
                 .tableName(TABLE_NAME)
                 .key(key)
                 .updateExpression(
                         "SET #endLocation = :endLocation, " +
-                                "#endKm = :endKm, " +
-                                "#endTime = :endTime, " +
-                                "#endOdometerImageUrl = :endOdometerImageUrl, " +
-                                "#signatureUrl = :signatureUrl, " +
-                                "#status = :status"
+                        "#endKm = :endKm, " +
+                        "#endTime = :endTime, " +
+                        "#endOdometerImageUrl = :endOdometerImageUrl, " +
+                        "#signatureUrl = :signatureUrl, " +
+                        "#status = :status"
                 )
                 .expressionAttributeNames(Map.of(
                         "#endLocation", "endLocation",
@@ -199,14 +227,7 @@ public class TripRepository {
                         "#signatureUrl", "signatureUrl",
                         "#status", "status"
                 ))
-                .expressionAttributeValues(Map.of(
-                        ":endLocation", AttributeValue.fromS(trip.getEndLocation()),
-                        ":endKm", AttributeValue.fromN(String.valueOf(trip.getEndKm())),
-                        ":endTime", AttributeValue.fromN(String.valueOf(trip.getEndTime())),
-                        ":endOdometerImageUrl", AttributeValue.fromS(trip.getEndOdometerImageUrl()),
-                        ":signatureUrl", AttributeValue.fromS(trip.getSignatureUrl()),
-                        ":status", AttributeValue.fromS(trip.getStatus().name())
-                ))
+                .expressionAttributeValues(values)
                 .build();
 
         dynamoDb.updateItem(request);
@@ -235,9 +256,9 @@ public class TripRepository {
 
     /* ================= SAFE STRING PUT ================= */
 
-    private void putS(Map<String, AttributeValue> item, String key, String value) {
+    private void putS(Map<String, AttributeValue> map, String key, String value) {
         if (value != null && !value.isBlank()) {
-            item.put(key, AttributeValue.fromS(value));
+            map.put(key, AttributeValue.fromS(value));
         }
     }
 
@@ -261,15 +282,19 @@ public class TripRepository {
         putS(item, "driverCarNumber", t.getDriverCarNumber());
 
         if (t.getPassengers() > 0)
-            item.put("passengers", AttributeValue.fromN(String.valueOf(t.getPassengers())));
+            item.put("passengers",
+                    AttributeValue.fromN(String.valueOf(t.getPassengers())));
 
         if (t.getNumberOfDays() > 0)
-            item.put("numberOfDays", AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
+            item.put("numberOfDays",
+                    AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
 
         if (t.getStatus() != null)
-            item.put("status", AttributeValue.fromS(t.getStatus().name()));
+            item.put("status",
+                    AttributeValue.fromS(t.getStatus().name()));
 
-        item.put("createdAt", AttributeValue.fromN(String.valueOf(t.getCreatedAt())));
+        item.put("createdAt",
+                AttributeValue.fromN(String.valueOf(t.getCreatedAt())));
 
         return item;
     }
@@ -299,12 +324,12 @@ public class TripRepository {
         if (item.containsKey("vehicleType"))
             t.setVehicleType(item.get("vehicleType").s());
 
-        if (item.containsKey("passengers") && item.get("passengers").n() != null)
+        if (item.containsKey("passengers"))
             t.setPassengers(Integer.parseInt(item.get("passengers").n()));
         else
             t.setPassengers(1);
 
-        if (item.containsKey("numberOfDays") && item.get("numberOfDays").n() != null)
+        if (item.containsKey("numberOfDays"))
             t.setNumberOfDays(Integer.parseInt(item.get("numberOfDays").n()));
         else
             t.setNumberOfDays(1);
@@ -333,10 +358,10 @@ public class TripRepository {
         if (item.containsKey("startLocation"))
             t.setStartLocation(item.get("startLocation").s());
 
-        if (item.containsKey("startKm") && item.get("startKm").n() != null)
+        if (item.containsKey("startKm"))
             t.setStartKm(Double.parseDouble(item.get("startKm").n()));
 
-        if (item.containsKey("startTime") && item.get("startTime").n() != null)
+        if (item.containsKey("startTime"))
             t.setStartTime(Long.parseLong(item.get("startTime").n()));
 
         if (item.containsKey("odometerImageUrl"))
@@ -345,10 +370,10 @@ public class TripRepository {
         if (item.containsKey("endLocation"))
             t.setEndLocation(item.get("endLocation").s());
 
-        if (item.containsKey("endKm") && item.get("endKm").n() != null)
+        if (item.containsKey("endKm"))
             t.setEndKm(Double.parseDouble(item.get("endKm").n()));
 
-        if (item.containsKey("endTime") && item.get("endTime").n() != null)
+        if (item.containsKey("endTime"))
             t.setEndTime(Long.parseLong(item.get("endTime").n()));
 
         if (item.containsKey("endOdometerImageUrl"))
