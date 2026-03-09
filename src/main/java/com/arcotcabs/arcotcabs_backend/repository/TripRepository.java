@@ -20,39 +20,50 @@ public class TripRepository {
 
     /* ================= CREATE TRIP ================= */
 
-    public String createTrip(Trip trip) {
+public String createTrip(Trip trip) {
 
-        if (trip.getUserId() == null || trip.getUserId().isBlank())
-            throw new IllegalStateException("userId is required");
+    String tripId = UUID.randomUUID().toString();
+    trip.setTripId(tripId);
+    trip.setStatus(TripStatus.PENDING);
+    trip.setCreatedAt(System.currentTimeMillis());
 
-        if (trip.getPickupLocation() == null || trip.getPickupLocation().isBlank())
-            throw new IllegalStateException("pickupLocation is required");
+    Map<String, AttributeValue> item = new HashMap<>();
 
-        if (trip.getDropLocation() == null || trip.getDropLocation().isBlank())
-            throw new IllegalStateException("dropLocation is required");
+    // REQUIRED FIELDS
+    item.put("tripId", AttributeValue.fromS(trip.getTripId()));
+    item.put("userId", AttributeValue.fromS(trip.getUserId()));
+    item.put("pickupLocation", AttributeValue.fromS(trip.getPickupLocation()));
+    item.put("dropLocation", AttributeValue.fromS(trip.getDropLocation()));
+    item.put("vehicleType", AttributeValue.fromS(trip.getVehicleType()));
 
-        if (trip.getVehicleType() == null || trip.getVehicleType().isBlank())
-            throw new IllegalStateException("vehicleType is required");
+    // OPTIONAL FIELDS
+    if (trip.getUserName() != null)
+        item.put("userName", AttributeValue.fromS(trip.getUserName()));
 
-        String tripId = UUID.randomUUID().toString();
-        trip.setTripId(tripId);
-        trip.setStatus(TripStatus.PENDING);
-        trip.setCreatedAt(System.currentTimeMillis());
+    if (trip.getUserPhone() != null)
+        item.put("userPhone", AttributeValue.fromS(trip.getUserPhone()));
 
-        Map<String, AttributeValue> item = toItem(trip);
-        System.out.println("DynamoDB ITEM -> " + item);
-// remove empty attributes
-        
+    if (trip.getTravelDate() != null)
+        item.put("travelDate", AttributeValue.fromS(trip.getTravelDate()));
 
-        dynamoDb.putItem(
-                PutItemRequest.builder()
+    if (trip.getPassengers() != null)
+        item.put("passengers", AttributeValue.fromN(String.valueOf(trip.getPassengers())));
+
+    if (trip.getNumberOfDays() != null)
+        item.put("numberOfDays", AttributeValue.fromN(String.valueOf(trip.getNumberOfDays())));
+
+    item.put("status", AttributeValue.fromS(trip.getStatus().name()));
+    item.put("createdAt", AttributeValue.fromN(String.valueOf(trip.getCreatedAt())));
+
+    dynamoDb.putItem(
+            PutItemRequest.builder()
                     .tableName(TABLE_NAME)
                     .item(item)
                     .build()
-        );
+    );
 
-        return tripId;
-    }
+    return tripId;
+}
 
     /* ================= FETCH ALL ================= */
 
