@@ -269,8 +269,7 @@ public class TripRepository {
 
     Map<String, AttributeValue> item = new HashMap<>();
 
-    putS(item, "tripId", t.getTripId());
-    putS(item, "userId", t.getUserId());
+    item.put("tripId", AttributeValue.fromS(t.getTripId()));    putS(item, "userId", t.getUserId());
     putS(item, "userName", t.getUserName());
     putS(item, "userPhone", t.getUserPhone());
 
