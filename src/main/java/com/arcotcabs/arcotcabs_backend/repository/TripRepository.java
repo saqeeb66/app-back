@@ -76,6 +76,7 @@ public class TripRepository {
     }
 
     /* ================= FETCH BY ID ================= */
+
     public void assignDriver(Trip trip) {
 
         Map<String, AttributeValue> key = Map.of(
@@ -113,6 +114,7 @@ public class TripRepository {
 
         dynamoDb.updateItem(request);
     }
+
     public Trip findById(String tripId) {
 
         Map<String, AttributeValue> key = Map.of(
@@ -243,10 +245,21 @@ public class TripRepository {
         item.put("pickupLocation", AttributeValue.fromS(t.getPickupLocation()));
         item.put("dropLocation", AttributeValue.fromS(t.getDropLocation()));
         item.put("vehicleType", AttributeValue.fromS(t.getVehicleType()));
-        item.put("DriverName", AttributeValue.fromS(t.getDriverName()));
-        item.put("DriverPhone", AttributeValue.fromS(t.getDriverPhone()));
-        item.put("driverCarType",AttributeValue.fromS(t.getDriverCarType()));
-        item.put("driverCarNumber",AttributeValue.fromS(t.getDriverCarNumber()));
+
+        /* ===== DRIVER FIELDS SAFE (OPTIONAL) ===== */
+
+        if (t.getDriverName() != null && !t.getDriverName().isBlank())
+            item.put("driverName", AttributeValue.fromS(t.getDriverName()));
+
+        if (t.getDriverPhone() != null && !t.getDriverPhone().isBlank())
+            item.put("driverPhone", AttributeValue.fromS(t.getDriverPhone()));
+
+        if (t.getDriverCarType() != null && !t.getDriverCarType().isBlank())
+            item.put("driverCarType", AttributeValue.fromS(t.getDriverCarType()));
+
+        if (t.getDriverCarNumber() != null && !t.getDriverCarNumber().isBlank())
+            item.put("driverCarNumber", AttributeValue.fromS(t.getDriverCarNumber()));
+
         item.put("passengers", AttributeValue.fromN(String.valueOf(t.getPassengers())));
         item.put("numberOfDays", AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
         item.put("status", AttributeValue.fromS(t.getStatus().name()));
@@ -283,7 +296,7 @@ public class TripRepository {
         if (item.containsKey("passengers") && item.get("passengers").n() != null)
             t.setPassengers(Integer.parseInt(item.get("passengers").n()));
         else
-            t.setPassengers(1); // default
+            t.setPassengers(1);
 
         if (item.containsKey("numberOfDays") && item.get("numberOfDays").n() != null)
             t.setNumberOfDays(Integer.parseInt(item.get("numberOfDays").n()));
@@ -295,8 +308,6 @@ public class TripRepository {
 
         if (item.containsKey("createdAt"))
             t.setCreatedAt(Long.parseLong(item.get("createdAt").n()));
-
-        /* ===== DRIVER INFO ===== */
 
         if (item.containsKey("driverId"))
             t.setDriverId(item.get("driverId").s());
@@ -313,8 +324,6 @@ public class TripRepository {
         if (item.containsKey("driverCarNumber"))
             t.setDriverCarNumber(item.get("driverCarNumber").s());
 
-        /* ===== START INFO ===== */
-
         if (item.containsKey("startLocation"))
             t.setStartLocation(item.get("startLocation").s());
 
@@ -326,8 +335,6 @@ public class TripRepository {
 
         if (item.containsKey("odometerImageUrl"))
             t.setOdometerImageUrl(item.get("odometerImageUrl").s());
-
-        /* ===== END INFO ===== */
 
         if (item.containsKey("endLocation"))
             t.setEndLocation(item.get("endLocation").s());
