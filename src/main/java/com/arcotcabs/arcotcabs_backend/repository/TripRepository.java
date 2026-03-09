@@ -20,19 +20,7 @@ public class TripRepository {
 
     /* ================= CREATE TRIP ================= */
 
-   public String createTrip(Trip trip) {
-
-    if (trip.getUserId() == null || trip.getUserId().isBlank())
-        throw new IllegalStateException("userId required");
-
-    if (trip.getPickupLocation() == null || trip.getPickupLocation().isBlank())
-        throw new IllegalStateException("pickupLocation required");
-
-    if (trip.getDropLocation() == null || trip.getDropLocation().isBlank())
-        throw new IllegalStateException("dropLocation required");
-
-    if (trip.getVehicleType() == null || trip.getVehicleType().isBlank())
-        throw new IllegalStateException("vehicleType required");
+public String createTrip(Trip trip) {
 
     String tripId = UUID.randomUUID().toString();
 
@@ -42,31 +30,31 @@ public class TripRepository {
 
     Map<String, AttributeValue> item = new HashMap<>();
 
-    safePutS(item, "tripId", trip.getTripId());
-    safePutS(item, "userId", trip.getUserId());
-    safePutS(item, "userName", trip.getUserName());
-    safePutS(item, "userPhone", trip.getUserPhone());
-    safePutS(item, "pickupLocation", trip.getPickupLocation());
-    safePutS(item, "dropLocation", trip.getDropLocation());
-    safePutS(item, "vehicleType", trip.getVehicleType());
+    putString(item, "tripId", trip.getTripId());
+    putString(item, "userId", trip.getUserId());
+    putString(item, "userName", trip.getUserName());
+    putString(item, "userPhone", trip.getUserPhone());
+    putString(item, "pickupLocation", trip.getPickupLocation());
+    putString(item, "dropLocation", trip.getDropLocation());
+    putString(item, "vehicleType", trip.getVehicleType());
 
-    if (trip.getPassengers() != null && trip.getPassengers() > 0)
+    if (trip.getPassengers() != null) {
         item.put("passengers",
-                AttributeValue.fromN(String.valueOf(trip.getPassengers())));
+                AttributeValue.builder().n(String.valueOf(trip.getPassengers())).build());
+    }
 
-    if (trip.getNumberOfDays() != null && trip.getNumberOfDays() > 0)
+    if (trip.getNumberOfDays() != null) {
         item.put("numberOfDays",
-                AttributeValue.fromN(String.valueOf(trip.getNumberOfDays())));
+                AttributeValue.builder().n(String.valueOf(trip.getNumberOfDays())).build());
+    }
 
-    if (trip.getStatus() != null)
-        item.put("status",
-                AttributeValue.fromS(trip.getStatus().name()));
+    item.put("status",
+            AttributeValue.builder().s(trip.getStatus().name()).build());
 
-    if (trip.getCreatedAt() != null)
-        item.put("createdAt",
-                AttributeValue.fromN(String.valueOf(trip.getCreatedAt())));
+    item.put("createdAt",
+            AttributeValue.builder().n(String.valueOf(trip.getCreatedAt())).build());
 
-    System.out.println("DynamoDB Item -> " + item);   // DEBUG
+    System.out.println("DynamoDB Item -> " + item);
 
     dynamoDb.putItem(
             PutItemRequest.builder()
@@ -77,7 +65,6 @@ public class TripRepository {
 
     return tripId;
 }
-
     /* ================= FETCH ALL ================= */
 
     public List<Trip> findAll() {
