@@ -20,37 +20,63 @@ public class TripRepository {
 
     /* ================= CREATE TRIP ================= */
 
-    public String createTrip(Trip trip) {
+   public String createTrip(Trip trip) {
 
-        if (trip.getUserId() == null || trip.getUserId().isBlank())
-            throw new IllegalStateException("userId required");
+    if (trip.getUserId() == null || trip.getUserId().isBlank())
+        throw new IllegalStateException("userId required");
 
-        if (trip.getPickupLocation() == null || trip.getPickupLocation().isBlank())
-            throw new IllegalStateException("pickupLocation required");
+    if (trip.getPickupLocation() == null || trip.getPickupLocation().isBlank())
+        throw new IllegalStateException("pickupLocation required");
 
-        if (trip.getDropLocation() == null || trip.getDropLocation().isBlank())
-            throw new IllegalStateException("dropLocation required");
+    if (trip.getDropLocation() == null || trip.getDropLocation().isBlank())
+        throw new IllegalStateException("dropLocation required");
 
-        if (trip.getVehicleType() == null || trip.getVehicleType().isBlank())
-            throw new IllegalStateException("vehicleType required");
+    if (trip.getVehicleType() == null || trip.getVehicleType().isBlank())
+        throw new IllegalStateException("vehicleType required");
 
-        String tripId = UUID.randomUUID().toString();
+    String tripId = UUID.randomUUID().toString();
 
-        trip.setTripId(tripId);
-        trip.setStatus(TripStatus.PENDING);
-        trip.setCreatedAt(System.currentTimeMillis());
+    trip.setTripId(tripId);
+    trip.setStatus(TripStatus.PENDING);
+    trip.setCreatedAt(System.currentTimeMillis());
 
-        Map<String, AttributeValue> item = toItem(trip);
+    Map<String, AttributeValue> item = new HashMap<>();
 
-        dynamoDb.putItem(
-                PutItemRequest.builder()
-                        .tableName(TABLE_NAME)
-                        .item(item)
-                        .build()
-        );
+    safePutS(item, "tripId", trip.getTripId());
+    safePutS(item, "userId", trip.getUserId());
+    safePutS(item, "userName", trip.getUserName());
+    safePutS(item, "userPhone", trip.getUserPhone());
+    safePutS(item, "pickupLocation", trip.getPickupLocation());
+    safePutS(item, "dropLocation", trip.getDropLocation());
+    safePutS(item, "vehicleType", trip.getVehicleType());
 
-        return tripId;
-    }
+    if (trip.getPassengers() != null && trip.getPassengers() > 0)
+        item.put("passengers",
+                AttributeValue.fromN(String.valueOf(trip.getPassengers())));
+
+    if (trip.getNumberOfDays() != null && trip.getNumberOfDays() > 0)
+        item.put("numberOfDays",
+                AttributeValue.fromN(String.valueOf(trip.getNumberOfDays())));
+
+    if (trip.getStatus() != null)
+        item.put("status",
+                AttributeValue.fromS(trip.getStatus().name()));
+
+    if (trip.getCreatedAt() != null)
+        item.put("createdAt",
+                AttributeValue.fromN(String.valueOf(trip.getCreatedAt())));
+
+    System.out.println("DynamoDB Item -> " + item);   // DEBUG
+
+    dynamoDb.putItem(
+            PutItemRequest.builder()
+                    .tableName(TABLE_NAME)
+                    .item(item)
+                    .build()
+    );
+
+    return tripId;
+}
 
     /* ================= FETCH ALL ================= */
 
