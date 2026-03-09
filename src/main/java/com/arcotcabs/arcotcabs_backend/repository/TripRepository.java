@@ -22,83 +22,89 @@ public class TripRepository {
 
 public String createTrip(Trip trip) {
 
-    System.out.println("========== CREATE TRIP DEBUG ==========");
+    System.out.println("🔥🔥🔥 CREATE TRIP METHOD CALLED 🔥🔥🔥");
 
-    System.out.println("userId        : [" + trip.getUserId() + "]");
-    System.out.println("userName      : [" + trip.getUserName() + "]");
-    System.out.println("userPhone     : [" + trip.getUserPhone() + "]");
-    System.out.println("pickupLocation: [" + trip.getPickupLocation() + "]");
-    System.out.println("dropLocation  : [" + trip.getDropLocation() + "]");
-    System.out.println("vehicleType   : [" + trip.getVehicleType() + "]");
-    System.out.println("passengers    : [" + trip.getPassengers() + "]");
-    System.out.println("numberOfDays  : [" + trip.getNumberOfDays() + "]");
+    try {
 
-    System.out.println("=======================================");
+        System.out.println("========= TRIP OBJECT =========");
+        System.out.println("userId        : " + trip.getUserId());
+        System.out.println("userName      : " + trip.getUserName());
+        System.out.println("userPhone     : " + trip.getUserPhone());
+        System.out.println("pickupLocation: " + trip.getPickupLocation());
+        System.out.println("dropLocation  : " + trip.getDropLocation());
+        System.out.println("vehicleType   : " + trip.getVehicleType());
+        System.out.println("passengers    : " + trip.getPassengers());
+        System.out.println("numberOfDays  : " + trip.getNumberOfDays());
+        System.out.println("================================");
 
-    String tripId = UUID.randomUUID().toString();
+        String tripId = UUID.randomUUID().toString();
 
-    trip.setTripId(tripId);
-    trip.setStatus(TripStatus.PENDING);
-    trip.setCreatedAt(System.currentTimeMillis());
+        trip.setTripId(tripId);
+        trip.setStatus(TripStatus.PENDING);
+        trip.setCreatedAt(System.currentTimeMillis());
 
-    Map<String, AttributeValue> item = new HashMap<>();
+        Map<String, AttributeValue> item = new HashMap<>();
 
-    addField(item, "tripId", trip.getTripId());
-    addField(item, "userId", trip.getUserId());
-    addField(item, "userName", trip.getUserName());
-    addField(item, "userPhone", trip.getUserPhone());
-    addField(item, "pickupLocation", trip.getPickupLocation());
-    addField(item, "dropLocation", trip.getDropLocation());
-    addField(item, "vehicleType", trip.getVehicleType());
+        addField(item, "tripId", trip.getTripId());
+        addField(item, "userId", trip.getUserId());
+        addField(item, "userName", trip.getUserName());
+        addField(item, "userPhone", trip.getUserPhone());
+        addField(item, "pickupLocation", trip.getPickupLocation());
+        addField(item, "dropLocation", trip.getDropLocation());
+        addField(item, "vehicleType", trip.getVehicleType());
 
-    if (trip.getPassengers() != null) {
-        item.put("passengers",
-                AttributeValue.builder().n(String.valueOf(trip.getPassengers())).build());
-        System.out.println("passengers -> SAVED");
-    } else {
-        System.out.println("passengers -> NULL");
+        if (trip.getPassengers() != null) {
+            item.put("passengers",
+                    AttributeValue.builder().n(String.valueOf(trip.getPassengers())).build());
+        }
+
+        if (trip.getNumberOfDays() != null) {
+            item.put("numberOfDays",
+                    AttributeValue.builder().n(String.valueOf(trip.getNumberOfDays())).build());
+        }
+
+        item.put("status",
+                AttributeValue.builder().s(trip.getStatus().name()).build());
+
+        item.put("createdAt",
+                AttributeValue.builder().n(String.valueOf(trip.getCreatedAt())).build());
+
+        System.out.println("📦 FINAL DYNAMODB ITEM:");
+        System.out.println(item);
+
+        dynamoDb.putItem(
+                PutItemRequest.builder()
+                        .tableName(TABLE_NAME)
+                        .item(item)
+                        .build()
+        );
+
+        System.out.println("✅ TRIP SAVED SUCCESSFULLY");
+
+        return tripId;
+
+    } catch (Exception e) {
+
+        System.out.println("❌ DYNAMODB INSERT FAILED");
+        System.out.println("ERROR: " + e.getMessage());
+        e.printStackTrace();
+
+        throw e;
     }
-
-    if (trip.getNumberOfDays() != null) {
-        item.put("numberOfDays",
-                AttributeValue.builder().n(String.valueOf(trip.getNumberOfDays())).build());
-        System.out.println("numberOfDays -> SAVED");
-    } else {
-        System.out.println("numberOfDays -> NULL");
-    }
-
-    item.put("status",
-            AttributeValue.builder().s(trip.getStatus().name()).build());
-
-    item.put("createdAt",
-            AttributeValue.builder().n(String.valueOf(trip.getCreatedAt())).build());
-
-    System.out.println("========== FINAL DYNAMODB ITEM ==========");
-    System.out.println(item);
-    System.out.println("=========================================");
-
-    dynamoDb.putItem(
-            PutItemRequest.builder()
-                    .tableName(TABLE_NAME)
-                    .item(item)
-                    .build()
-    );
-
-    return tripId;
 }
     private void addField(Map<String, AttributeValue> item, String key, String value) {
 
     if (value == null) {
-        System.out.println(key + " -> NULL");
+        System.out.println("⚠ " + key + " -> NULL");
         return;
     }
 
     if (value.trim().isEmpty()) {
-        System.out.println(key + " -> EMPTY STRING");
+        System.out.println("⚠ " + key + " -> EMPTY STRING");
         return;
     }
 
-    System.out.println(key + " -> SAVED : " + value);
+    System.out.println("✔ " + key + " -> " + value);
 
     item.put(key,
             AttributeValue.builder().s(value.trim()).build());
