@@ -273,10 +273,14 @@ public class TripRepository {
     putS(item, "userId", t.getUserId());
     putS(item, "userName", t.getUserName());
     putS(item, "userPhone", t.getUserPhone());
+
     putS(item, "pickupLocation", t.getPickupLocation());
     putS(item, "dropLocation", t.getDropLocation());
     putS(item, "vehicleType", t.getVehicleType());
+    putS(item, "tripNotes", t.getTripNotes());
+    putS(item, "travelDate", t.getTravelDate());
 
+    putS(item, "driverId", t.getDriverId());
     putS(item, "driverName", t.getDriverName());
     putS(item, "driverPhone", t.getDriverPhone());
     putS(item, "driverCarType", t.getDriverCarType());
@@ -299,6 +303,7 @@ public class TripRepository {
     }
 
     return item;
+
 }
 
     private Trip fromItem(Map<String, AttributeValue> item) {
