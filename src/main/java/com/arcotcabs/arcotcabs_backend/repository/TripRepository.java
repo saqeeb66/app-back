@@ -40,12 +40,9 @@ public class TripRepository {
         trip.setCreatedAt(System.currentTimeMillis());
 
         Map<String, AttributeValue> item = toItem(trip);
-
+        System.out.println("DynamoDB ITEM -> " + item);
 // remove empty attributes
-        item.values().removeIf(v ->
-            v == null ||
-            (v.s() != null && v.s().isBlank())
-        );
+        
 
         dynamoDb.putItem(
                 PutItemRequest.builder()
