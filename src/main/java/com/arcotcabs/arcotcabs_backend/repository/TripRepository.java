@@ -41,11 +41,17 @@ public class TripRepository {
 
         Map<String, AttributeValue> item = toItem(trip);
 
+// remove empty attributes
+        item.values().removeIf(v ->
+            v == null ||
+            (v.s() != null && v.s().isBlank())
+        );
+
         dynamoDb.putItem(
                 PutItemRequest.builder()
-                        .tableName(TABLE_NAME)
-                        .item(item)
-                        .build()
+                    .tableName(TABLE_NAME)
+                    .item(item)
+                    .build()
         );
 
         return tripId;
