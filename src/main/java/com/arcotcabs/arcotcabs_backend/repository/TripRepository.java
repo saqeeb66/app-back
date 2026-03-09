@@ -234,39 +234,43 @@ public class TripRepository {
 
     /* ================= MAPPER ================= */
 
-    private Map<String, AttributeValue> toItem(Trip t) {
+ private Map<String, AttributeValue> toItem(Trip t) {
 
-        Map<String, AttributeValue> item = new HashMap<>();
+    Map<String, AttributeValue> item = new HashMap<>();
 
-        item.put("tripId", AttributeValue.fromS(t.getTripId()));
-        item.put("userId", AttributeValue.fromS(t.getUserId()));
-        item.put("userName", AttributeValue.fromS(t.getUserName()));
-        item.put("userPhone", AttributeValue.fromS(t.getUserPhone()));
-        item.put("pickupLocation", AttributeValue.fromS(t.getPickupLocation()));
-        item.put("dropLocation", AttributeValue.fromS(t.getDropLocation()));
-        item.put("vehicleType", AttributeValue.fromS(t.getVehicleType()));
+    item.put("tripId", AttributeValue.fromS(t.getTripId()));
+    item.put("userId", AttributeValue.fromS(t.getUserId()));
+    item.put("userName", AttributeValue.fromS(t.getUserName()));
+    item.put("userPhone", AttributeValue.fromS(t.getUserPhone()));
+    item.put("pickupLocation", AttributeValue.fromS(t.getPickupLocation()));
+    item.put("dropLocation", AttributeValue.fromS(t.getDropLocation()));
+    item.put("vehicleType", AttributeValue.fromS(t.getVehicleType()));
 
-        /* ===== DRIVER FIELDS SAFE (OPTIONAL) ===== */
-
-        if (t.getDriverName() != null && !t.getDriverName().isBlank())
-            item.put("driverName", AttributeValue.fromS(t.getDriverName()));
-
-        if (t.getDriverPhone() != null && !t.getDriverPhone().isBlank())
-            item.put("driverPhone", AttributeValue.fromS(t.getDriverPhone()));
-
-        if (t.getDriverCarType() != null && !t.getDriverCarType().isBlank())
-            item.put("driverCarType", AttributeValue.fromS(t.getDriverCarType()));
-
-        if (t.getDriverCarNumber() != null && !t.getDriverCarNumber().isBlank())
-            item.put("driverCarNumber", AttributeValue.fromS(t.getDriverCarNumber()));
-
+    if (t.getPassengers() != null)
         item.put("passengers", AttributeValue.fromN(String.valueOf(t.getPassengers())));
-        item.put("numberOfDays", AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
-        item.put("status", AttributeValue.fromS(t.getStatus().name()));
-        item.put("createdAt", AttributeValue.fromN(String.valueOf(t.getCreatedAt())));
 
-        return item;
-    }
+    if (t.getNumberOfDays() != null)
+        item.put("numberOfDays", AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
+
+    item.put("status", AttributeValue.fromS(t.getStatus().name()));
+    item.put("createdAt", AttributeValue.fromN(String.valueOf(t.getCreatedAt())));
+
+    /* DRIVER FIELDS ONLY IF PRESENT */
+
+    if (t.getDriverName() != null && !t.getDriverName().isBlank())
+        item.put("driverName", AttributeValue.fromS(t.getDriverName()));
+
+    if (t.getDriverPhone() != null && !t.getDriverPhone().isBlank())
+        item.put("driverPhone", AttributeValue.fromS(t.getDriverPhone()));
+
+    if (t.getDriverCarType() != null && !t.getDriverCarType().isBlank())
+        item.put("driverCarType", AttributeValue.fromS(t.getDriverCarType()));
+
+    if (t.getDriverCarNumber() != null && !t.getDriverCarNumber().isBlank())
+        item.put("driverCarNumber", AttributeValue.fromS(t.getDriverCarNumber()));
+
+    return item;
+}
 
     private Trip fromItem(Map<String, AttributeValue> item) {
 
