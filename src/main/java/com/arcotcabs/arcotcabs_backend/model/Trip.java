@@ -19,8 +19,8 @@ public class Trip {
     private String tripNotes;
 
     private String travelDate;
-    private Integer passengers;
-    private Integer numberOfDays;
+    private Integer passengers = 1;
+    private Integer numberOfDays = 1;
 
 
     /* ================= STATUS ================= */
