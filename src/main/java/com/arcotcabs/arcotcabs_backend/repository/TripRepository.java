@@ -264,40 +264,60 @@ public class TripRepository {
 
     /* ================= MAPPER ================= */
 
-    private Map<String, AttributeValue> toItem(Trip t) {
+   private Map<String, AttributeValue> toItem(Trip t) {
 
-        Map<String, AttributeValue> item = new HashMap<>();
+    Map<String, AttributeValue> item = new HashMap<>();
 
-        putS(item, "tripId", t.getTripId());
-        putS(item, "userId", t.getUserId());
-        putS(item, "userName", t.getUserName());
-        putS(item, "userPhone", t.getUserPhone());
-        putS(item, "pickupLocation", t.getPickupLocation());
-        putS(item, "dropLocation", t.getDropLocation());
-        putS(item, "vehicleType", t.getVehicleType());
+    if (t.getTripId() != null && !t.getTripId().isBlank())
+        item.put("tripId", AttributeValue.fromS(t.getTripId()));
 
-        putS(item, "driverName", t.getDriverName());
-        putS(item, "driverPhone", t.getDriverPhone());
-        putS(item, "driverCarType", t.getDriverCarType());
-        putS(item, "driverCarNumber", t.getDriverCarNumber());
+    if (t.getUserId() != null && !t.getUserId().isBlank())
+        item.put("userId", AttributeValue.fromS(t.getUserId()));
 
-        if (t.getPassengers() > 0)
-            item.put("passengers",
-                    AttributeValue.fromN(String.valueOf(t.getPassengers())));
+    if (t.getUserName() != null && !t.getUserName().isBlank())
+        item.put("userName", AttributeValue.fromS(t.getUserName()));
 
-        if (t.getNumberOfDays() > 0)
-            item.put("numberOfDays",
-                    AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
+    if (t.getUserPhone() != null && !t.getUserPhone().isBlank())
+        item.put("userPhone", AttributeValue.fromS(t.getUserPhone()));
 
-        if (t.getStatus() != null)
-            item.put("status",
-                    AttributeValue.fromS(t.getStatus().name()));
+    if (t.getPickupLocation() != null && !t.getPickupLocation().isBlank())
+        item.put("pickupLocation", AttributeValue.fromS(t.getPickupLocation()));
 
-        item.put("createdAt",
-                AttributeValue.fromN(String.valueOf(t.getCreatedAt())));
+    if (t.getDropLocation() != null && !t.getDropLocation().isBlank())
+        item.put("dropLocation", AttributeValue.fromS(t.getDropLocation()));
 
-        return item;
-    }
+    if (t.getVehicleType() != null && !t.getVehicleType().isBlank())
+        item.put("vehicleType", AttributeValue.fromS(t.getVehicleType()));
+
+    if (t.getDriverName() != null && !t.getDriverName().isBlank())
+        item.put("driverName", AttributeValue.fromS(t.getDriverName()));
+
+    if (t.getDriverPhone() != null && !t.getDriverPhone().isBlank())
+        item.put("driverPhone", AttributeValue.fromS(t.getDriverPhone()));
+
+    if (t.getDriverCarType() != null && !t.getDriverCarType().isBlank())
+        item.put("driverCarType", AttributeValue.fromS(t.getDriverCarType()));
+
+    if (t.getDriverCarNumber() != null && !t.getDriverCarNumber().isBlank())
+        item.put("driverCarNumber", AttributeValue.fromS(t.getDriverCarNumber()));
+
+    if (t.getPassengers() > 0)
+        item.put("passengers",
+                AttributeValue.fromN(String.valueOf(t.getPassengers())));
+
+    if (t.getNumberOfDays() > 0)
+        item.put("numberOfDays",
+                AttributeValue.fromN(String.valueOf(t.getNumberOfDays())));
+
+    if (t.getStatus() != null)
+        item.put("status",
+                AttributeValue.fromS(t.getStatus().name()));
+
+    item.put("createdAt",
+            AttributeValue.fromN(String.valueOf(t.getCreatedAt())));
+
+    return item;
+}
 
     private Trip fromItem(Map<String, AttributeValue> item) {
 
