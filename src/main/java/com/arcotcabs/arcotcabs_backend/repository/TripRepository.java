@@ -29,31 +29,32 @@ public String createTrip(Trip trip) {
 
     Map<String, AttributeValue> item = new HashMap<>();
 
-    // REQUIRED FIELDS
-    item.put("tripId", AttributeValue.fromS(trip.getTripId()));
-    item.put("userId", AttributeValue.fromS(trip.getUserId()));
-    item.put("pickupLocation", AttributeValue.fromS(trip.getPickupLocation()));
-    item.put("dropLocation", AttributeValue.fromS(trip.getDropLocation()));
-    item.put("vehicleType", AttributeValue.fromS(trip.getVehicleType()));
+    /* REQUIRED FIELDS */
+    putS(item, "tripId", trip.getTripId());
+    putS(item, "userId", trip.getUserId());
+    putS(item, "pickupLocation", trip.getPickupLocation());
+    putS(item, "dropLocation", trip.getDropLocation());
+    putS(item, "vehicleType", trip.getVehicleType());
 
-    // OPTIONAL FIELDS
-    if (trip.getUserName() != null)
-        item.put("userName", AttributeValue.fromS(trip.getUserName()));
+    /* OPTIONAL FIELDS */
+    putS(item, "userName", trip.getUserName());
+    putS(item, "userPhone", trip.getUserPhone());
+    putS(item, "travelDate", trip.getTravelDate());
+    putS(item, "tripNotes", trip.getTripNotes());
 
-    if (trip.getUserPhone() != null)
-        item.put("userPhone", AttributeValue.fromS(trip.getUserPhone()));
-
-    if (trip.getTravelDate() != null)
-        item.put("travelDate", AttributeValue.fromS(trip.getTravelDate()));
-
-    if (trip.getPassengers() != null)
+    if (trip.getPassengers() != null && trip.getPassengers() > 0) {
         item.put("passengers", AttributeValue.fromN(String.valueOf(trip.getPassengers())));
+    }
 
-    if (trip.getNumberOfDays() != null)
+    if (trip.getNumberOfDays() != null && trip.getNumberOfDays() > 0) {
         item.put("numberOfDays", AttributeValue.fromN(String.valueOf(trip.getNumberOfDays())));
+    }
 
     item.put("status", AttributeValue.fromS(trip.getStatus().name()));
     item.put("createdAt", AttributeValue.fromN(String.valueOf(trip.getCreatedAt())));
+
+    /* DEBUG PRINT */
+    System.out.println("DynamoDB ITEM -> " + item);
 
     dynamoDb.putItem(
             PutItemRequest.builder()
@@ -64,7 +65,6 @@ public String createTrip(Trip trip) {
 
     return tripId;
 }
-
     /* ================= FETCH ALL ================= */
 
     public List<Trip> findAll() {
