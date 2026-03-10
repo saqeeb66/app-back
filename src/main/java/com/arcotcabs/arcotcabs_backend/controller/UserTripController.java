@@ -24,21 +24,21 @@ public class UserTripController {
     /* ================= USER – BOOK TRIP ================= */
 
     @PostMapping
-    public String bookTrip(
-            @RequestBody Trip trip,
-            Authentication auth
-    ) {
-        if (auth == null) {
+    public String bookTrip(@RequestBody Trip trip, Authentication auth) {
+
+        if (auth == null ||
+            auth.getName() == null ||
+            auth.getName().isBlank() ||
+            auth.getName().equals("anonymousUser")) {
+
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Login required"
             );
         }
 
-        // SECURITY: user cannot fake identity
+        // SECURITY: user identity from JWT
         trip.setUserId(auth.getName());
-        trip.setStatus(TripStatus.PENDING);
-        trip.setCreatedAt(System.currentTimeMillis());
 
         return service.bookTrip(trip);
     }
@@ -47,7 +47,12 @@ public class UserTripController {
 
     @GetMapping
     public List<Trip> myTrips(Authentication auth) {
-        if (auth == null) {
+
+        if (auth == null ||
+            auth.getName() == null ||
+            auth.getName().isBlank() ||
+            auth.getName().equals("anonymousUser")) {
+
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Login required"
@@ -57,10 +62,15 @@ public class UserTripController {
         return service.getUserTrips(auth.getName());
     }
 
-    /* ================= USER – VIEW SINGLE TRIP ================= */
+    /* ================= USER – ACTIVE TRIP ================= */
+
     @GetMapping("/active")
     public Trip getActiveTrip(Authentication auth) {
-        if (auth == null) {
+
+        if (auth == null ||
+            auth.getName() == null ||
+            auth.getName().isBlank()) {
+
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Login required"
@@ -71,21 +81,23 @@ public class UserTripController {
                 .stream()
                 .filter(t ->
                         t.getStatus() == TripStatus.PENDING ||
-                                t.getStatus() == TripStatus.DRIVER_ASSIGNED ||
-                                t.getStatus() == TripStatus.TRIP_STARTED ||
-                                t.getStatus() == TripStatus.TRIP_ON_HOLD
+                        t.getStatus() == TripStatus.DRIVER_ASSIGNED ||
+                        t.getStatus() == TripStatus.TRIP_STARTED ||
+                        t.getStatus() == TripStatus.TRIP_ON_HOLD
                 )
                 .findFirst()
                 .orElse(null);
     }
 
+    /* ================= USER – VIEW SINGLE TRIP ================= */
 
     @GetMapping("/{tripId}")
-    public Trip getTripById(
-            @PathVariable String tripId,
-            Authentication auth
-    ) {
-        if (auth == null) {
+    public Trip getTripById(@PathVariable String tripId, Authentication auth) {
+
+        if (auth == null ||
+            auth.getName() == null ||
+            auth.getName().isBlank()) {
+
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Login required"
@@ -94,7 +106,6 @@ public class UserTripController {
 
         Trip trip = service.getTripById(tripId);
 
-        // SECURITY: user can only see own trip
         if (!auth.getName().equals(trip.getUserId())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
