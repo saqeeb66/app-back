@@ -21,8 +21,17 @@ public class TripService {
     /* ================= USER ================= */
 
     public String bookTrip(Trip trip) {
+
+        if (trip.getUserId() == null || trip.getUserId().isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "UserId is required"
+            );
+        }
+
         trip.setStatus(TripStatus.PENDING);
         trip.setCreatedAt(System.currentTimeMillis());
+
         return repository.createTrip(trip);
     }
 
@@ -54,6 +63,13 @@ public class TripService {
             );
         }
 
+        if (driverId == null || driverId.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Driver ID required"
+            );
+        }
+
         trip.setDriverId(driverId);
         trip.setDriverName(driverName);
         trip.setDriverPhone(driverPhone);
@@ -61,7 +77,8 @@ public class TripService {
         trip.setDriverCarNumber(carNumber);
         trip.setStatus(TripStatus.DRIVER_ASSIGNED);
 
-        repository.updateStatus(tripId, TripStatus.DRIVER_ASSIGNED);
+        // ✅ Correct repository method
+        repository.assignDriver(trip);
     }
 
     /* ================= DRIVER ================= */
